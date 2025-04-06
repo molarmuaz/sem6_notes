@@ -48,7 +48,7 @@ Commonly used clauses.
 	```c
 	int arr[10];
 	#pragma omp parallel shared(arr)
-```
+	```
 
 
 #### Setting thread count
