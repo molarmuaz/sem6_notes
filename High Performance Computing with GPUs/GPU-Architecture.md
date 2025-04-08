@@ -1,0 +1,105 @@
+# GPU-Architecture
+
+#### We classify CPU+GPU systems on mainly two things; 
+
+- How is the memory setup **(Memory Subsystem)**
+	How is memory shared or if it even is shared. And within that we have two main types;
+	- Unified Memory **(Shared Memory)**
+		CPU and GPU share same memory, so easier to program and we need to copy data less often.
+		
+	- Discrete Memory **(Separate Memory)**
+		CPU has its own **RAM** and GPU has its own **VRAM**, so we need to copy data from one to another using API calls like `cudaMemcpy()`. More common in modern setups.
+		
+- How do the CPU and GPU communicate with each other **(Interconnect)**
+	Commonly used Interconnects are;
+	- PCIe **(Peripheral Component Interconnect Express)**:
+		Most common. Previously run through a connection between CPU and GPU called the northbridge, now it connects directly to the CPU, and the GPU acts as an external device connected to the CPU.
+
+	- NVLink **(NVIDIA Link)**
+		Way faster than PCIe. NVIDIA owned. Used in very high end equipment
+
+#### Processor Unit (PU)
+Earlier GPUs used **different hardware units for each stage** of the graphics pipeline (vertex shading, rasterizing, fragment shading, etc.). However, modern GPUs use **unified, programmable units** for flexibility. We create a **Unified Processor Array** by replicating these PU's. 
+
+Through this we are able to run thousands of threads simultaneously. Compared to maybe a few dozen by a CPU this is massive. However While CPUs are designed for **complex, sequential logic and low-latency tasks**, GPUs consist of **simpler cores optimized for large-scale, repetitive operations** — such as graphics rendering, matrix multiplication, or scientific simulations.
+
+#### Streaming Multiprocessor, Warps and Thread Scheduler
+
+In GPU architectures like NVIDIA's CUDA, a **warp** is a group of 32 threads that execute the same instruction at the same time, but on different data (SIMT model: Single Instruction, Multiple Threads). The **SM** is responsible for executing these warps in parallel. The **thread scheduler** inside the SM handles the scheduling and execution of warps, ensuring that they run in parallel as efficiently as possible, subject to available resources (like registers, shared memory, and execution units).
+
+
+#### Fermi and Maxwell Architectures
+
+| Feature                      | Fermi (2010)             | Maxwell (2014)                     |
+| ---------------------------- | ------------------------ | ---------------------------------- |
+| **# of SMs**                 | 16                       | 8                                  |
+| **CUDA cores per SM**        | 32                       | 128                                |
+| **Total CUDA cores**         | 512                      | 1024                               |
+| **Warp size**                | 32 threads               | 32 threads                         |
+| **Warp scheduler**           | Scalar, basic scheduling | Advanced, per-warp instruction buf |
+| **SIMD Processing**          | Yes                      | Yes                                |
+| **Shared Memory & L1 Cache** | Separate                 | Combined & Configurable            |
+| **Power Efficiency**         | Lower                    | Higher                             |
+| **Instruction Issue**        | Limited                  | More flexible & parallel           |
+| **Architecture Goal**        | General-purpose GPU      | High efficiency & simplified logic |
+
+#### CUDA vs Tensor Cores
+
+##### CUDA
+General purpose processing units designed for a wide range of tasks such as floating point operations, graphics rendering or just general non specialized computing.
+
+##### Tensor Cores
+Specialized cores dedicated for more intensive tasks in the domain of **Deep Learning and Neural Networks** with matrix-heavy operations.
+
+Generally the ratio of CUDA PUs and Tensor cores in a GPU are like 32:1
+
+---
+<center><h5>Make sure to revise CUDA syntax</h5></center> 
+
+---
+
+##### GPU has three levels of memory:
+- **Local:**  Memory local to a single thread  
+- **Shared:**  Memory local to a block of threads (Note: There are multiple warps within a block and so multiple warps have access to the same shared memory within a block)
+- **Global:**  Per-application memory shared by all threads
+
+*Shared memory is a **low-latency, high-speed memory** located close to each **Streaming Processor (SP)***
+
+### Multithreaded Multiprocessor Architecture (GPU)
+
+- **GPUs** are made of scalable multiprocessors that execute many threads efficiently.
+    
+- **SIMT (Single Instruction, Multiple Threads)** model: Executes threads in **warps** (groups of 32 threads), allowing for parallel execution.
+	
+- **Multithreading** ensures efficient inter-thread communication via **shared memory**.
+    
+    - **`__syncthreads()`** allows threads to synchronize and communicate frequently.
+        
+    - **Warp-level synchronization** is more efficient than global synchronization.
+        
+
+### GPU Memory Levels:
+
+**Other than the three previously studied**
+    
+- **Texture memory**: Read-only shared memory for large arrays.
+    
+- **Constant memory**: Read-only memory for threads on SM.
+    
+
+### To Achieve Efficiency We Should  Consider:
+
+- Minimizing communication between **GPU and CPU** and between **GPU DRAM and registers**.
+    
+- Minimizing **register usage** and **bank conflicts** in shared memory.
+    
+- Maximizing **shared memory usage** and the number of **blocks running concurrently**.
+    
+
+### SIMD vs SIMT:
+
+- **SIMD** (Single Instruction, Multiple Data): Same instruction, multiple data elements processed simultaneously (used in CPUs).
+    
+- **SIMT** (Single Instruction, Multiple Threads): Same instruction, multiple threads can execute independently (used in GPUs).
+    
+- **SIMT** allows thread divergence (threads dividing at conditional branches such as if statements), whereas **SIMD** doesn’t, making **SIMT** more flexible but less efficient when divergence occurs.
