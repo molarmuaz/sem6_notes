@@ -92,7 +92,8 @@ If there is 1 block and multiple threads. Or we can use `c[blockIdx.x] = a[block
 ##### Indexing Arrays with Blocks and Threads
 In real life, it is more complicated than that, where we have multiple blocks and multiple threads within those blocks. For example:
 
-![[Pasted image 20250225001612.png]]
+![Pasted image 20250225001612](https://github.com/user-attachments/assets/0cc7b979-8e07-4fe0-a1ae-f9a17dd67c5c)
+
 
 In these cases, we use 
 `int index = threadIdx.x + blockIdx.x * blockDim.x;`
