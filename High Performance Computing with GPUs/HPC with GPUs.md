@@ -1,0 +1,182 @@
+# CUDA
+CUDA (Compute Unified Device Architecture) is a parallel computing platform and programming model developed by NVIDIA for general computing on GPUs. CUDA allows developers to write explicit GPU code using an extension of the C/C++ programming languages. It provides direct control over GPU memory management, thread hierarchy, synchronization, and kernel execution.
+
+*Device*: GPUs Memory
+*Host:* CPUs Memory
+
+## Heterogeneous Computing
+use of multiple types of processors, like CPUs and GPUs, within the same system to optimize performance for different tasks.
+
+**Benefits:** performance, efficient use of energy and better cost.
+
+**Challenges:** include complex programming (need to worry about synchronization, memory management, etc.) 
+
+## Implementation
+
+When implementing, whenever we need to use the GPU, we need to:
+- Copy memory that is to be used from CPU Memory(Host) to GPU Memory(Device).
+- Load the program in the GPU and execute it.
+- Copy results from GPU back to CPU.
+
+While it is up to the programmer when to bring in the GPU, it is recommended to do so in parts of 
+- Large calculations
+- Independent Operations (Data Parallelism)
+- Repeated Tasks (since GPUs are mostly SIMD or SPMD, they specialize in applying the same instruction on a large dataset).
+
+We identify device (GPU) functions using the keyword `__global__` . These functions are called by the host (CPU).
+
+Host calls these functions with the syntax: `mykernel<<<M,N>>>();`
+We use triple angle brackets and within them define the number of blocks (M) and the number of threads (N). 
+
+*Blocks:* Unit of execution. Group of threads. Organized within a grid. Only threads within the same block communicate and synchronize. This means increasing blocks can create more independent threads, so more parallelism and more distribution of the problem. However increasing blocks doesn't always mean better performance and other factors need to be kept in mind including the GPU itself, memory, bandwidth, etc.
+
+The number of threads within a block has limits, typically up to 1024 threads in a 3D configuration (depending on the GPU architecture). 
+
+### Simple addition example:
+```c
+__global__ void add(int *a, int *b, int *c) {
+
+*c = *a + *b;
+
+}
+
+int main(void) {
+
+int a, b, c; // host copies of a, b, c
+int *d_a, *d_b, *d_c; // device copies of a, b, c
+int size = sizeof(int);
+
+// Allocate space for device copies of a, b, c
+cudaMalloc((void **)&d_a, size);
+cudaMalloc((void **)&d_b, size);
+cudaMalloc((void **)&d_c, size);
+
+// Setup input values
+a = 2;
+b = 7;
+
+// Copy inputs to device
+cudaMemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
+cudaMemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
+
+// Launch add() kernel on GPU
+add<<<1,1>>>(d_a, d_b, d_c);
+
+// Copy result back to host
+cudaMemcpy(&c, d_c, size, cudaMemcpyDeviceToHost);
+
+// Cleanup
+cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
+return 0;
+
+}
+```
+
+#### Steps:
+1) Create device copy pointer variables
+2) Allocate memory. cudaMalloc((void**)&copy_variable, size_of_variable);
+3) Copy values from host variables to device copies. cudaMemcpy(copy_variable, variable, size, cudaMemcpyHostToDevice);
+4) Call the Device Function. func<<<block,thread>>>(copy_var);
+5) After return copy values back from device variables to host variables. cudaMemcpy(copy_variable, variable, size, cudaMemcpyDeviceToHost);
+6) Free the allocated memory. cudaFree(copy_var);
+
+#### Indexing:
+`blockIdx.x|y|z` represents the ID of the block in x or y or z dimension in the grid.
+`threadIdx.x|y|z` represents the ID  of the block in x or y or z dimension in the block.
+`blockDim.x|y|z` represents the number of threads in the x or y or z dimension of the block.
+
+we can use, 
+`c[threadIdx.x] = a[threadIdx.x] + b[threadIdx.x];`. 
+If there is 1 block and multiple threads. Or we can use `c[blockIdx.x] = a[blockIdx.x] + b[blockIdx.x];` , if there are multiple blocks and 1 thread per block.
+
+##### Indexing Arrays with Blocks and Threads
+In real life, it is more complicated than that, where we have multiple blocks and multiple threads within those blocks. For example:
+
+![[Pasted image 20250225001612.png]]
+
+In these cases, we use 
+`int index = threadIdx.x + blockIdx.x * blockDim.x;`
+to find the index.
+
+##### **Kernel Launches Are Asynchronous**:
+
+When a kernel is launched on the GPU, the control immediately returns to the CPU. The **kernel execution** on the GPU happens in parallel with the CPU, but the **CPU does not wait** for the GPU to finish.
+
+This is why kernel launches are described as **asynchronous**.
+
+Normally, this works because while the GPU runs its own calculations, the CPU can complete independent tasks and save time instead of waiting on the GPU. However, there are occurrences where synchronization is needed. For that, CUDA provides functions and we pick the one based on requirements.
+
+**`cudaDeviceSynchronize()`**:
+
+- This function **blocks** the CPU until all **preceding CUDA operations** (kernel executions, memory transfers, etc.) have completed.
+- It is used to **explicitly synchronize** the CPU with the GPU when needed, ensuring that all CUDA calls have finished before proceeding.
+
+**`cudaMemcpyAsync()`**:
+
+- This is the **asynchronous** version of `cudaMemcpy()`, which does **not block** the CPU.
+- The CPU can continue executing without waiting for the memory copy to finish, which can be useful for overlapping computation and data transfers.
+
+**`cudaMemcpy()`**:
+
+- This function **blocks** the CPU until the data transfer between host (CPU) memory and device (GPU) memory is complete.
+- **Synchronization point**: It ensures that all **preceding CUDA calls** (including kernel executions) have finished before copying data
+
+##### Errors:
+All CUDA API calls return an error code of data type `(cudaError_t)`
+
+We can get the last error thrown by:
+```c
+cudaError_t err = cudaGetLastError(); //If no errrors, we get cudaSuccess
+char* error = cudaGetErrorString(err);// If cudaSuccess, we get "no error"
+```
+
+##### Management Functions
+
+- **`cudaGetDeviceCount(int *count)`**:
+    
+    - Queries how many CUDA-capable GPUs are available in the system.
+    - The result (number of GPUs) is stored in the integer pointer `count`.
+- **`cudaSetDevice(int device)`**:
+    
+    - Sets the active GPU device that subsequent CUDA calls will run on.
+    - The `device` parameter is the index (starting from 0) of the GPU you want to use.
+- **`cudaGetDevice(int *device)`**:
+    
+    - Retrieves the current GPU device being used by the program and stores the device index in the `device` pointer.
+- **`cudaGetDeviceProperties(cudaDeviceProp *prop, int device)`**:
+    
+    - Retrieves the properties (e.g., memory size, number of cores, etc.) of a specified GPU (`device` index) and stores them in a `cudaDeviceProp` structure.
+
+### Performance Analysis
+
+• Performance tuning is an iterative process
+• Requires optimization in:
+	– memory access
+	– compute efficiency
+	– workload balancing
+	– communication overhead.
+• How to analyze the Performance?
+• Proper profiling and understanding hardware limitations are key to achieving peak performance
+
+#### FLOPS (Floating Point Operations per Second)
+
+##### Theoretical FLOPS
+maximum number of FLOPS a computer can do based on its  architecture and specifications
+##### Measured FLOPS
+actual computational performance observed during application execution
+
+###### General Formula:
+(Theoretical) FLOPS = sockets * (cores per socket) * (cycles per second) * (Floating  point operations per cycle)
+
+###### GPU FLOPS Formula:
+FLOPS = Cores per SM * Number of SMs * Clock * Operations per Core per Cycle
+
+
+#### Amdahl’s Law
+Theoretical speedup calculations.
+Formula used to analyze the potential speedup of a program when a portion of it is parallelized.
+Provides an upper bound on the performance improvement gained by adding more processing  e.g., CPU cores, GPUs) to a task.
+
+##### Formula:
+$$Speed-Up = 1/((1-p)+ (p/s)) $$
+
