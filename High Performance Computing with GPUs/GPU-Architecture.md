@@ -54,7 +54,7 @@ Specialized cores dedicated for more intensive tasks in the domain of **Deep Lea
 Generally the ratio of CUDA PUs and Tensor cores in a GPU are like 32:1
 
 ---
-<center><h5>Make sure to revise CUDA syntax</h5></center> 
+<div style="color: yellow;"><center><h5>Make sure to revise CUDA syntax</h5></center> </div>
 
 ---
 
@@ -103,3 +103,24 @@ Generally the ratio of CUDA PUs and Tensor cores in a GPU are like 32:1
 - **SIMT** (Single Instruction, Multiple Threads): Same instruction, multiple threads can execute independently (used in GPUs).
     
 - **SIMT** allows thread divergence (threads dividing at conditional branches such as if statements), whereas **SIMD** doesn’t, making **SIMT** more flexible but less efficient when divergence occurs.
+
+
+### Thread scheduling
+Make sure to keep in mind how threads and blocks are defined in CUDA:
+
+```c
+dim3 blockDim(128); //128 threads per block
+dim3 gridDim(4); //4 blocks per grid
+kernel<< gridDim, blockDim >>();
+
+// How many warps in a block?
+// 128 (threads per block) / 32 (threads in a warp) = 4 warps in a block
+
+
+//If we have SM's fewer than the number of blocks for e.g 2, they are assigned blocks in a round-robin
+
+// block 1 : SM1, block 2: SM2, block 3: SM1, block 4: SM2
+
+//Since we have two blocks each we can deduce each SM executes 8 warps
+// These warps are also executed in a round-robin fashion.
+```
