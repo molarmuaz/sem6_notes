@@ -65,7 +65,7 @@ Computing distances between clusters for Step 3 can be implemented in different 
 -  **Centroid clustering**
 	-  The distance between one cluster and another cluster is computed as the distance from one cluster centroid to the other cluster centroid
 
-![](attachment/Clustering/file--1.jpg)
+![](attachment/Clustering/file-1.jpg)
 
 ### How to know we have good clusters?
 
