@@ -89,6 +89,7 @@ $$
 $$
 
 where
+
 $$
 R_i = \max_{j \ne i} R_{ij}
 $$
