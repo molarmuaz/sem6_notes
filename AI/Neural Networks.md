@@ -18,7 +18,7 @@ Let's look at a single neuron to understand how it works on the smallest level:
 
 These notes are on the earlier version of the neurons i.e. perceptron which is very similar to a neuron, however we have advanced and optimized how we calculate stuff like activation, error, updates, etc.
 
-![](attachment/Neural Networks/file-.jpg)
+![](attachment/Neural-Networks/file-.jpg)
 
 #### Forward Pass
 At an individual level the neuron receives results from the previous layer, applies weights it has learned overtime are best for the desired output (matrix multiplication—multiply the vector we got with the weight) and add biases, but that is for later (not shown in the figure). After this the resultant vector created is sent to the neurons of next layer (whichever ones it is connected with)
@@ -53,6 +53,7 @@ In a perceptron error and update calculations were very simple since we didn't b
 $$
 error = actual - output
 $$
+
 This means we will get a negative answer if the output exceeds the actual answer and positive if it is smaller.
 
 ###### Weight Update
@@ -60,6 +61,7 @@ This means we will get a negative answer if the output exceeds the actual answer
 $$
 	w_{i+1} = w_i + \alpha \cdot x_i \cdot e 
 $$
+
 here i is the training iteration (epoch), alpha is the learning rate, x is the input, and e is the error.
 
 So, we add a positive or negative number to the weight (depending upon the error) with applied learning rate. We use the input it was given to not update all weights equally but based on what input they got and how much they affect the output i.e. if a neuron had an input of 0 changing its weight wouldn't be needed
@@ -77,7 +79,7 @@ $$
 Y(p) = \text{step} \left[ \sum_{i=1}^{n} x_i(p) \cdot w_i(p) - \theta \right]
 $$
 
-![](attachment/Neural Networks/file-1.jpg)
+![](attachment/Neural-Networks/file-1.jpg)
 
 Perceptrons can learn AND and OR operations. Not XOR though :(
 
@@ -92,6 +94,7 @@ $$
 $$
 e_k(p) = d_k(p) - y_k(p)
 $$
+
 where error gradient is output value * (1- output value), this is the sigmoid derivative multiplied by the error calculated by subtracting actual value from output value.
 
 ##### Hidden Layers
@@ -99,6 +102,7 @@ where error gradient is output value * (1- output value), this is the sigmoid de
 $$
 \delta_j(p) = y_j(p) \cdot \left(1 - y_j(p) \right) \cdot \sum_{k=1}^{l} \delta_k(p) \cdot w_{jk}(p)
 $$
+
 here derivative of sigmoid multiplied with already calculated error gradients of next layer multiplied by the weights to those neurons summed up.
 
 
@@ -107,6 +111,7 @@ Finally for all layers we calculate adjusted weight by:
 $$
 w_{jk}(p + 1) = w_{jk}(p) + \Delta w_{jk}(p)
 $$
+
 where
 
 $$
@@ -134,6 +139,7 @@ In the delta rule mentioned above:
 $$
 \Delta w_{jk}(p) = \alpha \cdot \delta_k(p) \cdot y_j(p)
 $$
+
 we can add a momentum term to accelerate it. We multiply this term with the final weight of the previous epoch. This number spans anywhere between 0 and 1, usually 0.95.
 
 this becomes:
