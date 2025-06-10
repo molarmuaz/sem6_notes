@@ -18,7 +18,7 @@ Let's look at a single neuron to understand how it works on the smallest level:
 
 These notes are on the earlier version of the neurons i.e. perceptron which is very similar to a neuron, however we have advanced and optimized how we calculate stuff like activation, error, updates, etc.
 
-![[attachment/Neural Networks/file-.jpg]]
+![](attachment/Neural Networks/file-.jpg)
 
 #### Forward Pass
 At an individual level the neuron receives results from the previous layer, applies weights it has learned overtime are best for the desired output (matrix multiplication—multiply the vector we got with the weight) and add biases, but that is for later (not shown in the figure). After this the resultant vector created is sent to the neurons of next layer (whichever ones it is connected with)
@@ -49,12 +49,14 @@ ReLU creates a strong gradients at values greater than 0 and flat lines at 0 and
 In a perceptron error and update calculations were very simple since we didn't base it off a gradient.
 
 ###### Error
+
 $$
 error = actual - output
 $$
 This means we will get a negative answer if the output exceeds the actual answer and positive if it is smaller.
 
 ###### Weight Update
+
 $$
 	w_{i+1} = w_i + \alpha \cdot x_i \cdot e 
 $$
@@ -70,17 +72,19 @@ Final Formulas for Perceptron:
 Initialize with random values for weights and threshold between [-0.5,0.5].
 
 We use step function for activation. So, weight is calculated as:
+
 $$
 Y(p) = \text{step} \left[ \sum_{i=1}^{n} x_i(p) \cdot w_i(p) - \theta \right]
 $$
 
-![[attachment/Neural Networks/file- 1.jpg]]
+![](attachment/Neural Networks/file-1.jpg)
 
 Perceptrons can learn AND and OR operations. Not XOR though :(
 
 #### Back propogation formula for multilayer network
 
 ##### Output layer: 
+
 $$
 \delta_k(p) = y_k(p) \cdot \left(1 - y_k(p)\right) \cdot e_k(p)
 $$
@@ -99,10 +103,12 @@ here derivative of sigmoid multiplied with already calculated error gradients of
 
 
 Finally for all layers we calculate adjusted weight by:
+
 $$
 w_{jk}(p + 1) = w_{jk}(p) + \Delta w_{jk}(p)
 $$
 where
+
 $$
 \Delta w_{jk}(p) = \alpha \cdot \delta_k(p) \cdot y_j(p)
 $$
@@ -113,6 +119,7 @@ $$
 Through mathematical analysis we have found that using a hyperbolic tan activation function is better than sigmoid:
 
 Formula:
+
 $$
 y = \frac{2a}{1 + e^{-bx}} - a
 $$
@@ -123,12 +130,14 @@ a assures that the value of the derivative at origin (0) is approximately 1. Thi
 
 #### Momentum term
 In the delta rule mentioned above:
+
 $$
 \Delta w_{jk}(p) = \alpha \cdot \delta_k(p) \cdot y_j(p)
 $$
 we can add a momentum term to accelerate it. We multiply this term with the final weight of the previous epoch. This number spans anywhere between 0 and 1, usually 0.95.
 
 this becomes:
+
 $$
 \Delta w_{jk}(p) = \beta \cdot w_{jk}(p-1) + \alpha \cdot \delta_k(p) \cdot y_j(p)
 $$
