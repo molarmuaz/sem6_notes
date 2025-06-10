@@ -73,6 +73,7 @@ In general, **good clusters** should have:
 
 - **High intra-cluster similarity**,  
     i.e. **low variance** among the members of the same cluster.
+  
 $$
 \text{Var}(x) = \frac{1}{N-1} \sum_{i=1}^{N} (x_i - \bar{x})^2
 $$
@@ -82,6 +83,7 @@ However, only having low intra-cluster variance doesn't necessarily mean it is g
 Let \( C = \{C_1, C_2, \dots, C_k\} \) be the set of clusters.
 
 **Davies-Bouldin Index:**
+
 $$
 \text{DB} = \frac{1}{k} \sum_{i=1}^{k} R_i
 $$
@@ -92,6 +94,7 @@ R_i = \max_{j \ne i} R_{ij}
 $$
 
 and
+
 $$
 R_{ij} = \frac{\text{var}(C_i) + \text{var}(C_j)}{\|c_i - c_j\|}
 $$
