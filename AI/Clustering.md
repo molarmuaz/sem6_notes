@@ -39,7 +39,7 @@ This clustering does not require the number of clusters to be set. After converg
 #### Dendrogram
 While merging cluster one by one, we can draw a tree diagram known as dendrogram. From this diagram we can get however many clusters we want.
 
-![[attachment/Clustering/file-.jpg]]
+!(attachment/Clustering/file-.jpg)
 
 This is what it looks like, so if we want two clusters:
 – Cluster 1: q, r
@@ -65,7 +65,7 @@ Computing distances between clusters for Step 3 can be implemented in different 
 -  **Centroid clustering**
 	-  The distance between one cluster and another cluster is computed as the distance from one cluster centroid to the other cluster centroid
 
-![[attachment/Clustering/file- 1.jpg]]
+!(attachment/Clustering/file- 1.jpg)
 
 ### How to know we have good clusters?
 
